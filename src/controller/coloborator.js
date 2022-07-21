@@ -1,80 +1,157 @@
-import { openDb } from "../configDB.js";
-// import Jwt  from "jsonwebtoken";
-// import authMiddleware from ('./auth.js')
+import { PrismaClient } from "@prisma/client";
+import Jwt  from "jsonwebtoken";
+
+const prisma = new PrismaClient();
 
 export async function selectColoboradores(req, res) {
-    openDb().then(db =>{
-        db.all('SELECT * FROM Coloborador')
-        .then(coloboradores => res.json(coloboradores));
-    })
-}
-
-export async function selectColoborador(req, res) {
-    let id = req.body.id;
-    openDb().then(db => {
-        db.get('SELECT * FROM Coloborador WHERE id=?', [id])
-        .then(coloborador => res.json(coloborador));
-    })
-}
-
-export async function selectColoboradores_Login(req, res) {
-    openDb().then(db =>{
-        db.all('SELECT * FROM Coloborador_Login')
-        .then(coloboradores_login => res.json(coloboradores_login));
-    })
+    const Coloboradores = await prisma.coloborador.findMany({
+        orderBy:{role:"asc"}})
+        return res.status(200).json(Coloboradores)
 }
 
 export async function insertColoborador(req, res) {
-    let coloborador = req.body;
-    openDb().then(db => {
-        db.run('INSERT INTO Coloborador (nome, admissão, função, tipo_sanguineo) VALUES (?,?,?,?)', 
-        [coloborador.nome, coloborador.admissão, coloborador.função, coloborador.tipo_sanguineo])
+    const {name, admission, role, type_blood} = req.body;
+    const coloboradorInsert = await prisma.coloborador.create({
+        data: {
+            name,
+            admission, 
+            role,
+            type_blood
+        }
     })
-    res.json({
-        "statusCode": 200
-    })
-}
-
-export async function insertColoborador_Login(req, res) {
-    let coloborador = req.body;
-    openDb().then(db => {
-        db.run(`SELECT * FROM Coloborador_Login WHERE nome=? AND senha=? VALUES (?,?)`, 
-        [coloborador.nome, coloborador.senha])
-    })
-    res.json({
-        "statusCode": 200
-    })
-}
-
-export async function coloborador_Authenticate(req, res) {
-    let coloborador = req.body;
-    openDb().then(db => {
-        db.run('INSERT INTO Coloborador_Login (nome, senha) VALUES (?,?)', 
-        [coloborador.nome, coloborador.senha])
-    })
-    res.json({
-        "statusCode": 200
-    })
+    return res.status(201).json(coloboradorInsert)
 }
 
 export async function updateColoborador(req, res) {
-    let coloborador = req.body;
-    openDb().then(db => {
-        db.run('UPDATE Coloborador SET nome=?, admissão=?, função=?, tipo_sanguineo=? WHERE id=?', 
-        [coloborador.nome, coloborador.admissão, coloborador.função, coloborador.tipo_sanguineo, coloborador.id])
-    })
-    res.json({
-        "statusCode": 200
-    })
+    const {id,name, admission, role, type_blood} = req.body;
+    const coloboradorUpdate = await prisma.coloborador.update({
+     where: { id },
+     data: {
+         name,
+         admission,
+         role,
+         type_blood
+     }
+    });
+    return res.status(200).json(coloboradorUpdate)
 }
 
 export async function deleteColoborador(req, res) {
-    let id = req.body.id;
-    openDb().then(db =>{
-        db.get('DELETE FROM Coloborador WHERE id=?', [id])
-        .then(res => res)
-    })
-    res.json({
-        "statusCode": 200
-    })
+  const { id } = req.body;
+  const intId = parseInt(id)
+
+  if(!intId){
+    return res.status(400).json("Id require")
+}
+
+const coloboratorExist = await prisma.coloborador.findUnique({
+    where: { id: intId } 
+});
+
+if(!coloboratorExist) {
+    return res.status(404).json("coloborator not find")
+}
+
+await prisma.coloborador.delete({
+    where: {id: intId}
+});
+
+return res.status(200).send();
+
 } 
+
+export async function selectColoboradores_Login(req, res) {
+    const Coloboradores_Login = await prisma.Coloborador_Login.findMany({
+        orderBy:{name:"asc"}})
+        return res.status(200).json(Coloboradores_Login)
+}
+
+export async function insertColoborador_Login(req, res) {
+    const {name, senha} = req.body;
+    const coloboradorExist = await prisma.Coloborador_Login.findFirst({
+        where: {
+            name
+        }   
+    })
+
+    if(coloboradorExist){
+        return res.status(400).json("coloborator already exist")
+    }
+
+    const coloborador_Login_Insert = await prisma.Coloborador_Login.create({
+        data: {
+            name,
+            senha
+        }
+    })
+    return res.status(201).json(coloborador_Login_Insert)
+}
+
+export async function updateColoborador_Login(req, res) {
+    const {id, name, senha} = req.body;
+    const coloboradorUpdate_Login = await prisma.Coloborador_Login.update({
+     where: { id },
+     data: {
+         name,
+         senha
+     }
+    });
+    return res.status(200).json(coloboradorUpdate_Login)
+}
+
+export async function deleteColoborador_Login(req, res) {
+    const { id } = req.body;
+    const intId = parseInt(id)
+  
+    if(!intId){
+      return res.status(400).json("Id require")
+  }
+  
+  const coloboratorExist_Login = await prisma.Coloborador_Login.findUnique({
+      where: { id: intId } 
+  });
+  
+  if(!coloboratorExist_Login) {
+      return res.status(404).json("coloborator not find")
+  }
+  
+  await prisma.Coloborador_Login.delete({
+      where: {id: intId}
+  });
+  
+  return res.status(200).send();
+  
+  } 
+
+export async  function coloborador_Authenticate (req, res) {
+   const { name, senha } = req.body;
+
+   const coloboradorExist = await prisma.Coloborador_Login.findFirst({
+    where: {
+        name
+    }   
+})
+
+if(!coloboradorExist){
+    return res.status(400).json("coloborator not exist")
+}
+
+if(senha !== coloboradorExist.senha){
+    return res.status(403).json("coloborator_name or coloborator_senha wrong")
+}
+
+const token = Jwt.sign(coloboradorExist, "SECRETKEY", {
+    expiresIn: "1d" 
+})
+
+return res.json({ auth: true, token: token})
+
+}
+
+
+
+
+
+
+
+
