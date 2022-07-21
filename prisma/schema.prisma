@@ -14,15 +14,13 @@ model Coloborador_Login {
     id Int @id @default(autoincrement())
     name String
     senha String
-    coloborador Coloborador[]
 }
 
 model Coloborador {
     id Int @id @default(autoincrement())
-    User Coloborador_Login @relation(fields: [coloboradorId], references: [id])
+    name String
     admission String
     role String
     type_blood String
-    coloboradorId Int
 }
 

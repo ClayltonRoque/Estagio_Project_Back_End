@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function selectColoboradores(req, res) {
     const Coloboradores = await prisma.coloborador.findMany({
-        orderBy:{role:"asc"}})
+        orderBy:{id:"asc"}})
         return res.status(200).json(Coloboradores)
 }
 
