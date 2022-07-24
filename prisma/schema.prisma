@@ -10,17 +10,22 @@ datasource db {
   url      = "file:../database.db"
 }
 
-model Coloborador_Login {
-    id Int @id @default(autoincrement())
-    name String
-    senha String
-}
-
 model Coloborador {
     id Int @id @default(autoincrement())
     name String
+    login String
+    password String
     admission String
     role String
     type_blood String
 }
+
+model Service {
+  id Int @id @default(autoincrement())
+  name String
+  requester String
+  status String
+  solicitation DateTime
+  end DateTime 
+} 
 
