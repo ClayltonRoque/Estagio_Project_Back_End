@@ -27,7 +27,7 @@ router.post('/coloborador_authenticate', coloborador_Authenticate)
 
 // Finalize service and send email
 router.post('/finalize_service', correctJwt, finalizeService)
-router.post('/attendence_service',  attendenceService)
+router.post('/attendence_service', attendenceService)
 
 
 export default router;
