@@ -5,7 +5,7 @@
   "routes": [{ "src": "/(.*)", "dest": "src/index.js" }],
   "headers": [
     {
-      "source": "/api/(.*)",
+      "source": "src/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Credentials", "value": "true" },
         { "key": "Access-Control-Allow-Origin", "value": "*" },
