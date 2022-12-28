@@ -8,4 +8,3 @@ app.use(express.json());
 app.use(router);
 
 app.listen(3000, () => console.log("api rodando"));
-a;
